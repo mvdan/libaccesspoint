@@ -207,6 +207,10 @@ final public class WifiApControl {
 		return state;
 	}
 
+	public void setDeviceName(String name) {
+		this.deviceName = name;
+	}
+
 	// getWifiApState returns the current Wi-Fi AP state.
 	// If an error occured invoking the method via reflection, -1 is
 	// returned.
