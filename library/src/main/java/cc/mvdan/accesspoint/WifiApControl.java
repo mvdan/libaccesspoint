@@ -115,6 +115,11 @@ final public class WifiApControl {
 		deviceName = getDeviceName(wm);
 	}
 
+	private WifiApControl(Context context, String deviceName) {
+		wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		this.deviceName = deviceName;
+	}
+
 	// getInstance is a standard singleton instance getter, constructing
 	// the actual class when first called.
 	public static WifiApControl getInstance(Context context) {
@@ -124,6 +129,17 @@ final public class WifiApControl {
 				return null;
 			}
 			instance = new WifiApControl(context);
+		}
+		return instance;
+	}
+
+	public static WifiApControl getInstance(Context context, String deviceName) {
+		if (instance == null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.System.canWrite(context)) {
+				Log.e(TAG, "6.0 or later, but haven't been granted WRITE_SETTINGS!");
+				return null;
+			}
+			instance = new WifiApControl(context, deviceName);
 		}
 		return instance;
 	}
@@ -205,10 +221,6 @@ final public class WifiApControl {
 			return state + 10;
 		}
 		return state;
-	}
-
-	public void setDeviceName(String name) {
-		this.deviceName = name;
 	}
 
 	// getWifiApState returns the current Wi-Fi AP state.
