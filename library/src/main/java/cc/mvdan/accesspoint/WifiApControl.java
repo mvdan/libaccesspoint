@@ -27,6 +27,7 @@ import android.util.Log;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
@@ -435,5 +436,58 @@ final public class WifiApControl {
 			}
 		}.start();
 		return clients;
+	}
+
+	/**
+	 * Checks if 5Ghz band is available to create an accesspoint.
+	 * @return
+	 */
+	public static boolean is5GhzBandAvailable(){
+		WifiConfiguration wifiConfiguration = new WifiConfiguration();
+		return setField(wifiConfiguration,"apBand",1);
+	}
+
+	/**
+	 * Sets a field value on a given object
+	 *
+	 * @param targetObject the object to set the field value on
+	 * @param fieldName    exact name of the field
+	 * @param fieldValue   value to set on the field
+	 * @return true if the value was successfully set, false otherwise
+	 */
+	public static boolean setField(Object targetObject, String fieldName, Object fieldValue) {
+		Field field;
+		try {
+			field = targetObject.getClass().getDeclaredField(fieldName);
+		} catch (NoSuchFieldException e) {
+			field = null;
+		}
+		Class superClass = targetObject.getClass().getSuperclass();
+		while (field == null && superClass != null) {
+			try {
+				field = superClass.getDeclaredField(fieldName);
+			} catch (NoSuchFieldException e) {
+				superClass = superClass.getSuperclass();
+			}
+		}
+		if (field == null) {
+			return false;
+		}
+		field.setAccessible(true);
+		try {
+			field.set(targetObject, fieldValue);
+			return true;
+		} catch (IllegalAccessException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Tries to enable 5Ghz band for accesspoint in provided configuration.
+	 * @param configuration
+	 * @return
+	 */
+	public static boolean enable5GhzBand(WifiConfiguration configuration){
+		return setField(configuration, "apBand", 1);
 	}
 }
